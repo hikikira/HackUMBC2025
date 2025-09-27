@@ -1,0 +1,39 @@
+import numpy as np 
+import cv2 
+from colorthief import ColorThief
+import os
+
+face_cascade = cv2.CascadeClassifier("C:\\Users\\okayh\\Downloads\\harr_casscade_classifiers\\haarcascade_frontalface_default.xml")
+
+#opencv webcam cap
+webcam = cv2.VideoCapture(0) 
+#while loop remains true so that the code keeps running
+#while loop has q to exit
+if not webcam.isOpened():
+     print("Error occured, please try again")
+     exit()
+
+
+while(True): 
+  #capture frames
+  ret, frame = webcam.read()
+  grey = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+  faces = face_cascade.detectMultiScale(grey, scaleFactor=1.1, minNeighbors=5, minSize=(30,30))
+  for (x,y, w, h) in faces:
+     cv2.rectangle(frame, (x,y), (x+w, y+h), (0,255,0), 2)
+     cv2.imshow('Face', frame)
+  
+  #exit with q
+  if cv2.waitKey(1) & 0xFF == ord('q'): 
+    webcam.release() 
+    cv2.destroyAllWindows() 
+    break
+#touhou color stuff
+touhoufile = "Touhou_color.txt"
+dir = "C:\\Users\\okayh\\Documents\\touhous"
+with open (touhoufile, "w") as f:
+    for file in os.listdir(dir):
+        color = ColorThief(os.path.join(dir, file)).get_color(quality=1)
+        colortup = str(color)
+        f.write(colortup)
+        f.write("\r")
