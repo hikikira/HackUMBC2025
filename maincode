@@ -1,3 +1,5 @@
+#Code by Salma Benderson, Avery Hung, Ian Hung   
+#9/27/2025
 from colorthief import ColorThief
 import cv2 
 import os
@@ -10,8 +12,8 @@ dir = "C:\\Users\\okayh\\Documents\\touhous"
 songplay = False
 colortup = ""        
 selected_2hu = ""
-array = []
 count = 0
+th_array= []
 
 
 
@@ -73,10 +75,9 @@ def play_youtube_video(url):
     songplay = True
     os.system(f'start {url}')  # Pause to allow the video to play for a while
     time.sleep(10) 
-    songplay = False # Let the video play for 10 seconds
+    # Let the video play for 10 seconds
     #os.system("taskkill /im firefox.exe /f")  # Browser kill 
      #IMPORTANT, SET UR BROWSER TO Control if audio and video play automatically on sites = true
-    
 
 #it took us 2 hr for this :sob:
 
@@ -85,17 +86,41 @@ def play_youtube_video(url):
 #touhou color stuff    
 #r1 is person r2 is touhou --note for me
 def show_right_2hu(r1,g1,b1, r2, g2, b2):
-        if r2 in range(abs(r1-40), r1+40) and g2 in range(abs(g1-40), g1+40) and b2 in range(abs(b1-40), b1+40):  
+        if r2 in range(abs(r1-30), r1+30) and g2 in range(abs(g1-30), g1+30) and b2 in range(abs(b1-30), b1+30):  
             #if red green blue are in range match 2hu with persons shirt color
             with open(touhoufile) as f:
                 lines = f.readlines()
-                for index in range(len(lines)):
-                    #if str((r2, g2, b2)) in lines[index]:
-                    selected_2hu = lines[index-1]
-                    print("true")
-                    temphold = os.path.join(dir, selected_2hu)   
-                    cv2.imread(temphold.join('.png'), cv2.IMREAD_UNCHANGED) 
-                    
+                #matched_Index = None
+                for index in range(len(array)):
+                    if str((r2, g2, b2)) in array[index]:
+                        selected_2hu = str(array[index]-1) #does the -1 break the thing bc it an array?
+                        #matched_Index = index  
+                        #break
+                for i in os.listdir(dir):
+                    th_array.append(i)                    
+                temphold = os.path.join("C:\\Users\\okayh\\Documents\\touhous", (th_array[index]))
+                 
+                #cv2.imread(temphold, cv2.IMREAD_UNCHANGED) 
+                #cv2.imshow('Matched 2hu', cv2.resize(cv2.imread(temphold, cv2.IMREAD_UNCHANGED), (480, 480)))
+                
+                #cv2.destroyWindow('Matched 2hu')  
+                png_image = cv2.imread(temphold, cv2.IMREAD_UNCHANGED)  #Read with alpha channel included
+
+                #Setting the paste destination coordinates. For the time being, in the upper left
+                x1, y1, x2, y2 = 0, 0, png_image.shape[1], png_image.shape[0]
+
+                #Synthetic!
+                frame[y1:y2, x1:x2] = frame[y1:y2, x1:x2] * (1 - png_image[:, :, 3:] / 255) + png_image[:, :, :3] * (png_image[:, :, 3:] / 255)
+                #Play song?
+                if songplay is False:
+                 if selected_2hu == "":
+                     pass 
+                else:
+                 play_youtube_video(TouhouCharacter_Song_List.get(selected_2hu))
+                 
+
+array = []
+
 
 with open("C:\\Users\\okayh\\Downloads\\2hus - Sheet1(1).csv") as file:
     csvth = csv.reader(file)
@@ -131,20 +156,23 @@ def select_shirt_color(x, y, w, h):
 
     vertical= round((y-h)*2)
     horizontal = x-w
-    if vertical > 479:
-        vertical = 479 
-    if horizontal > 479:
-        horizontal = 479
+    if vertical > 480:
+        vertical = 480 
+    if horizontal > 480:
+        horizontal = 480
     middlechestcoord = (vertical, horizontal)
     #kicks the pixel back if not in range 
     
     color = frame[middlechestcoord]
+
     with open (touhoufile, 'r') as f:
         for colortuple in os.listdir(dir):
             show_right_2hu(color[0], color[1], color[2], tuple(colortup)[0],tuple(colortup)[1],tuple(colortup)[2])
 
 while(True): 
     #capture frames
+    
+    #put the url from the dictionary as a parametre
     ret, frame = webcam.read()
     grey = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     faces = face_cascade.detectMultiScale(grey, scaleFactor=1.1, minNeighbors=5, minSize=(30,30))
@@ -152,9 +180,6 @@ while(True):
         cv2.rectangle(frame, (x,y), (x+w, y+h), (255,255,255), 2)
         select_shirt_color(x,y, w, h)
         cv2.imshow('Face', frame)
-    #if songplay is False:
-        #play_youtube_video(TouhouCharacter_Song_List["https://www.youtube.com/watch?v=NmlXXPVxQ3Q"])#put the url from the dictionary as a parametre
-
 
 
     #exit with q
