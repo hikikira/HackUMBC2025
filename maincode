@@ -1,75 +1,21 @@
 from colorthief import ColorThief
 import cv2 
 import os
+import csv
+import time
+
 #variables
 touhoufile = "Touhou_color.txt"
 dir = "C:\\Users\\okayh\\Documents\\touhous"
-
-#touhou color stuff    
-#r1 is touhout r2 is person --note for me
-
-def show_right_2hu(r1,g1,b1, r2, g2, b2):
-
-    for th in dir:
-        print(r1, g1, b1, r2, g2, b2)
-        if r2 in range(abs(r1-30), r1+30) and g2 in range(abs(g1-30), g1+30) and b2 in range(abs(b1-30), b1+30):  
-            temphold = os.path.join(dir, th)   
-            smallerimg = cv2.imread("".join(temphold, '.png'), -1)
-            y1, y2 = 50, 50 + smallerimg.shape[0]
-            x1, x2 = 50, 50 + smallerimg.shape[1]
-            alpha_s = smallerimg[:, :, 3] / 255.0
-            alpha_l = 1.0 - alpha_s
-            for c in range(0, 3):
-                frame[y1:y2, x1:x2, c] = (alpha_s * smallerimg[:, :, c] + alpha_l * frame[y1:y2, x1:x2, c])
-            
+songplay = False
 colortup = ""        
-with open (touhoufile, "w") as f:
-    for file in os.listdir(dir):
-        color = ColorThief(os.path.join(dir, file)).get_color(quality=10)
-        colortup = color
-        f.write(str(colortup))
-        f.write("\r")
-
-        #f.write(f"{file}: {color}\n") #from ai but may be useful later
-#opencv and ai stuff
-
-face_cascade = cv2.CascadeClassifier("C:\\Users\\okayh\\Downloads\\harr_casscade_classifiers\\haarcascade_frontalface_default.xml")
-
-#opencv webcam cap
-webcam = cv2.VideoCapture(0) 
-#while loop remains true so that the code keeps running
-#while loop has q to exit   
-def select_shirt_color(x, y, w, h):
-    
-    middlefacecoord = (round((y-h)), x-w) 
-    color = frame[middlefacecoord]
-    with open (touhoufile, 'r') as f:
-        for colortuple in os.listdir(dir):
-            show_right_2hu(color[0], color[1], color[2], tuple(colortup)[0],tuple(colortup)[1],tuple(colortup)[2])
-
-while(True): 
-    #capture frames
-    ret, frame = webcam.read()
-    grey = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    faces = face_cascade.detectMultiScale(grey, scaleFactor=1.1, minNeighbors=5, minSize=(30,30))
-    for (x,y, w, h) in faces:
-        cv2.rectangle(frame, (x,y), (x+w, y+h), (255,255,255), 2)
-        select_shirt_color(x,y, w, h)
-        cv2.imshow('Face', frame)
-
-    #exit with q
-    if cv2.waitKey(1) & 0xFF == ord('q'): 
-        webcam.release() 
-        cv2.destroyAllWindows() 
-        break
-
-
-
+selected_2hu = ""
+array = []
+count = 0
 
 
 
 #Youtube API stuff
-import time
 
 #Associate the picture of the 2hu char with the name(string) that matches the name in the dictionary
 #I make a new dictionary, key = img, value = 2hu character name
@@ -122,24 +68,98 @@ ImgCharacterMatch = { # Put ze character heire
     "latest-1376346061.png": "Rinnosuke", 
 }   
 
-testimg = cv2.imread("C:\\Users\\okayh\\Documents\\touhous\\latest-116244708.png")
 
 def play_youtube_video(url):
-    
-    
+    songplay = True
     os.system(f'start {url}')  # Pause to allow the video to play for a while
-    time.sleep(10)  # Let the video play for 10 seconds
+    time.sleep(10) 
+    songplay = False # Let the video play for 10 seconds
     #os.system("taskkill /im firefox.exe /f")  # Browser kill 
      #IMPORTANT, SET UR BROWSER TO Control if audio and video play automatically on sites = true
+    
 
-play_youtube_video(TouhouCharacter_Song_List[ImgCharacterMatch["latest-116244708.png"]])#put the url from the dictionary as a parametre
 #it took us 2 hr for this :sob:
 
 
 
+#touhou color stuff    
+#r1 is person r2 is touhou --note for me
+def show_right_2hu(r1,g1,b1, r2, g2, b2):
+        if r2 in range(abs(r1-40), r1+40) and g2 in range(abs(g1-40), g1+40) and b2 in range(abs(b1-40), b1+40):  
+            #if red green blue are in range match 2hu with persons shirt color
+            with open(touhoufile) as f:
+                lines = f.readlines()
+                for index in range(len(lines)):
+                    #if str((r2, g2, b2)) in lines[index]:
+                    selected_2hu = lines[index-1]
+                    print("true")
+                    temphold = os.path.join(dir, selected_2hu)   
+                    cv2.imread(temphold.join('.png'), cv2.IMREAD_UNCHANGED) 
+                    
+
+with open("C:\\Users\\okayh\\Downloads\\2hus - Sheet1(1).csv") as file:
+    csvth = csv.reader(file)
+    for lines in csvth:
+        array.append(lines)
+
+
+#gets touhou color
+    
+with open (touhoufile, "w") as f:
+    for file in os.listdir(dir):
+        color = ColorThief(os.path.join(dir, file)).get_color(quality=1)
+        colortup = color
+        if(array[count+1]==None):
+            f.writelines(array[count])
+            f.write("\r")        
+            count+=1
+        f.write(str(colortup))
+        f.write("\r")
 
 
 
+#opencv and ai stuff
+
+face_cascade = cv2.CascadeClassifier("C:\\Users\\okayh\\Downloads\\harr_casscade_classifiers\\haarcascade_frontalface_default.xml")
+
+#opencv webcam cap
+webcam = cv2.VideoCapture(0) 
+#while loop remains true so that the code keeps running
+#while loop has q to exit   
+
+def select_shirt_color(x, y, w, h):
+
+    vertical= round((y-h)*2)
+    horizontal = x-w
+    if vertical > 479:
+        vertical = 479 
+    if horizontal > 479:
+        horizontal = 479
+    middlechestcoord = (vertical, horizontal)
+    #kicks the pixel back if not in range 
+    
+    color = frame[middlechestcoord]
+    with open (touhoufile, 'r') as f:
+        for colortuple in os.listdir(dir):
+            show_right_2hu(color[0], color[1], color[2], tuple(colortup)[0],tuple(colortup)[1],tuple(colortup)[2])
+
+while(True): 
+    #capture frames
+    ret, frame = webcam.read()
+    grey = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    faces = face_cascade.detectMultiScale(grey, scaleFactor=1.1, minNeighbors=5, minSize=(30,30))
+    for (x,y, w, h) in faces:
+        cv2.rectangle(frame, (x,y), (x+w, y+h), (255,255,255), 2)
+        select_shirt_color(x,y, w, h)
+        cv2.imshow('Face', frame)
+    #if songplay is False:
+        #play_youtube_video(TouhouCharacter_Song_List["https://www.youtube.com/watch?v=NmlXXPVxQ3Q"])#put the url from the dictionary as a parametre
 
 
+
+    #exit with q
+        if cv2.waitKey(1) & 0xFF == ord('q'): 
+            webcam.release() 
+            cv2.destroyAllWindows() 
+            break
 
