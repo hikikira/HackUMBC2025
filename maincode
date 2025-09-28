@@ -1,21 +1,23 @@
 from colorthief import ColorThief
 import cv2 
 import os
-
 from matplotlib import image
+from numpy import *
+import matplotlib.pyplot as plt
 #import numpy as np
 #variables
 touhoufile = "Touhou_color.txt"
 dir = "C:\\Users\\okayh\\Documents\\touhous"
 
 #touhou color stuff    
-
-def show_right_2hu(rgb1, rgb2):
-    rm = 0.5*(rgb1[0]+rgb2[0])
-    d = sum((2+rm,4,3-rm)*(rgb1-rgb2)**2)**0.5
+#r1 is touhout r2 is person --note for me
+def show_right_2hu(r1,g1,b1, r2, g2, b2):
+    if r2 in range(r1, r1+30) and g2 in range(g1, g1+30) and b2 in range(b1, b1+30): 
+        print(r2)
+        
     x_offset = 50
     y_offset = 50
-    if d<20:
+    if True:
         smallerimg = cv2.imread("C:\\Users\\okayh\\Documents\\touhous\\latest-1775211097.png", -1)
         y1, y2 = 50, 50 + smallerimg.shape[0]
         x1, x2 = 50, 50 + smallerimg.shape[1]
@@ -43,11 +45,13 @@ webcam = cv2.VideoCapture(0)
 #while loop remains true so that the code keeps running
 #while loop has q to exit   
 def select_shirt_color(x, y, w, h):
-    middlechestcoords = (x, y*1.5, w, h*1.5)
-    color = image[middlechestcoords]
     
+    middlechestcoords = (y-h, x-w) #note for me dw abt the int yap
+    color = frame[middlechestcoords]
+    with open (touhoufile, 'r') as f:
+        for colortuple in os.listdir(dir):
+            show_right_2hu(color[0], color[1], color[2], tuple(colortuple)[0],tuple(colortuple)[1],tuple(colortuple)[2])
 
-    
 while(True): 
     #capture frames
     ret, frame = webcam.read()
@@ -76,6 +80,7 @@ import time
 #I make a new dictionary, key = img, value = 2hu character name
 # assign that to a variable then use that variable to get the url from the dictionary
 #then use that url to play the video
+
 TouhouCharacter_Song_List = {
     "Aya Shameimaru": "https://www.youtube.com/watch?v=NmlXXPVxQ3Q",
     "Yuyuko Saigyouji": "https://www.youtube.com/watch?v=Zis2TtxdFjQ&list=RDZis2TtxdFjQ&start_radio=1",
