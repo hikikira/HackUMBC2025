@@ -1,41 +1,36 @@
 from colorthief import ColorThief
 import cv2 
 import os
-from matplotlib import image
-from numpy import *
-import matplotlib.pyplot as plt
-#import numpy as np
 #variables
 touhoufile = "Touhou_color.txt"
 dir = "C:\\Users\\okayh\\Documents\\touhous"
 
 #touhou color stuff    
 #r1 is touhout r2 is person --note for me
+
 def show_right_2hu(r1,g1,b1, r2, g2, b2):
-    if r2 in range(r1, r1+30) and g2 in range(g1, g1+30) and b2 in range(b1, b1+30): 
-        print(r2)
-        
-    x_offset = 50
-    y_offset = 50
-    if True:
-        smallerimg = cv2.imread("C:\\Users\\okayh\\Documents\\touhous\\latest-1775211097.png", -1)
-        y1, y2 = 50, 50 + smallerimg.shape[0]
-        x1, x2 = 50, 50 + smallerimg.shape[1]
 
-        # Extract alpha channel
-        alpha_s = smallerimg[:, :, 3] / 255.0
-        alpha_l = 1.0 - alpha_s
-
-        for c in range(0, 3):
-            frame[y1:y2, x1:x2, c] = (alpha_s * smallerimg[:, :, c] +
-                                    alpha_l * frame[y1:y2, x1:x2, c])
-    
+    for th in dir:
+        print(r1, g1, b1, r2, g2, b2)
+        if r2 in range(abs(r1-30), r1+30) and g2 in range(abs(g1-30), g1+30) and b2 in range(abs(b1-30), b1+30):  
+            temphold = os.path.join(dir, th)   
+            smallerimg = cv2.imread("".join(temphold, '.png'), -1)
+            y1, y2 = 50, 50 + smallerimg.shape[0]
+            x1, x2 = 50, 50 + smallerimg.shape[1]
+            alpha_s = smallerimg[:, :, 3] / 255.0
+            alpha_l = 1.0 - alpha_s
+            for c in range(0, 3):
+                frame[y1:y2, x1:x2, c] = (alpha_s * smallerimg[:, :, c] + alpha_l * frame[y1:y2, x1:x2, c])
+            
+colortup = ""        
 with open (touhoufile, "w") as f:
     for file in os.listdir(dir):
         color = ColorThief(os.path.join(dir, file)).get_color(quality=10)
-        colortup = str(color)
-        f.write(colortup)
+        colortup = color
+        f.write(str(colortup))
         f.write("\r")
+
+        #f.write(f"{file}: {color}\n") #from ai but may be useful later
 #opencv and ai stuff
 
 face_cascade = cv2.CascadeClassifier("C:\\Users\\okayh\\Downloads\\harr_casscade_classifiers\\haarcascade_frontalface_default.xml")
@@ -46,11 +41,11 @@ webcam = cv2.VideoCapture(0)
 #while loop has q to exit   
 def select_shirt_color(x, y, w, h):
     
-    middlechestcoords = (y-h, x-w) #note for me dw abt the int yap
-    color = frame[middlechestcoords]
+    middlefacecoord = (round((y-h)), x-w) 
+    color = frame[middlefacecoord]
     with open (touhoufile, 'r') as f:
         for colortuple in os.listdir(dir):
-            show_right_2hu(color[0], color[1], color[2], tuple(colortuple)[0],tuple(colortuple)[1],tuple(colortuple)[2])
+            show_right_2hu(color[0], color[1], color[2], tuple(colortup)[0],tuple(colortup)[1],tuple(colortup)[2])
 
 while(True): 
     #capture frames
@@ -121,7 +116,11 @@ TouhouCharacter_Song_List = {
     "Neru": "https://www.youtube.com/watch?v=o4Gh11wjpKw&list=RDo4Gh11wjpKw",
 }
 
-Character = ""  # Put ze character heire 
+ImgCharacterMatch = { # Put ze character heire
+    "latest-116244708.png": "Aya Shameimaru",
+    "latest-1775211097.png": "Yuyuko Saigyouji", #BY AI CHECK LATER
+    "latest-1376346061.png": "Rinnosuke", 
+}   
 
 testimg = cv2.imread("C:\\Users\\okayh\\Documents\\touhous\\latest-116244708.png")
 
@@ -133,12 +132,8 @@ def play_youtube_video(url):
     #os.system("taskkill /im firefox.exe /f")  # Browser kill 
      #IMPORTANT, SET UR BROWSER TO Control if audio and video play automatically on sites = true
 
-play_youtube_video(TouhouCharacter_Song_List[Character])#put the url from the dictionary as a parametre
+play_youtube_video(TouhouCharacter_Song_List[ImgCharacterMatch["latest-116244708.png"]])#put the url from the dictionary as a parametre
 #it took us 2 hr for this :sob:
-
-
-   
-
 
 
 
