@@ -1,39 +1,145 @@
-import numpy as np 
-import cv2 
 from colorthief import ColorThief
+import cv2 
 import os
+
+from matplotlib import image
+#import numpy as np
+#variables
+touhoufile = "Touhou_color.txt"
+dir = "C:\\Users\\okayh\\Documents\\touhous"
+
+#touhou color stuff    
+
+def show_right_2hu(rgb1, rgb2):
+    rm = 0.5*(rgb1[0]+rgb2[0])
+    d = sum((2+rm,4,3-rm)*(rgb1-rgb2)**2)**0.5
+    x_offset = 50
+    y_offset = 50
+    if d<20:
+        smallerimg = cv2.imread("C:\\Users\\okayh\\Documents\\touhous\\latest-1775211097.png", -1)
+        y1, y2 = 50, 50 + smallerimg.shape[0]
+        x1, x2 = 50, 50 + smallerimg.shape[1]
+
+        # Extract alpha channel
+        alpha_s = smallerimg[:, :, 3] / 255.0
+        alpha_l = 1.0 - alpha_s
+
+        for c in range(0, 3):
+            frame[y1:y2, x1:x2, c] = (alpha_s * smallerimg[:, :, c] +
+                                    alpha_l * frame[y1:y2, x1:x2, c])
+    
+with open (touhoufile, "w") as f:
+    for file in os.listdir(dir):
+        color = ColorThief(os.path.join(dir, file)).get_color(quality=10)
+        colortup = str(color)
+        f.write(colortup)
+        f.write("\r")
+#opencv and ai stuff
 
 face_cascade = cv2.CascadeClassifier("C:\\Users\\okayh\\Downloads\\harr_casscade_classifiers\\haarcascade_frontalface_default.xml")
 
 #opencv webcam cap
 webcam = cv2.VideoCapture(0) 
 #while loop remains true so that the code keeps running
-#while loop has q to exit
-if not webcam.isOpened():
-     print("Error occured, please try again")
-     exit()
+#while loop has q to exit   
+def select_shirt_color(x, y, w, h):
+    middlechestcoords = (x, y*1.5, w, h*1.5)
+    color = image[middlechestcoords]
+    
 
-
+    
 while(True): 
-  #capture frames
-  ret, frame = webcam.read()
-  grey = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-  faces = face_cascade.detectMultiScale(grey, scaleFactor=1.1, minNeighbors=5, minSize=(30,30))
-  for (x,y, w, h) in faces:
-     cv2.rectangle(frame, (x,y), (x+w, y+h), (0,255,0), 2)
-     cv2.imshow('Face', frame)
-  
-  #exit with q
-  if cv2.waitKey(1) & 0xFF == ord('q'): 
-    webcam.release() 
-    cv2.destroyAllWindows() 
-    break
-#touhou color stuff
-touhoufile = "Touhou_color.txt"
-dir = "C:\\Users\\okayh\\Documents\\touhous"
-with open (touhoufile, "w") as f:
-    for file in os.listdir(dir):
-        color = ColorThief(os.path.join(dir, file)).get_color(quality=1)
-        colortup = str(color)
-        f.write(colortup)
-        f.write("\r")
+    #capture frames
+    ret, frame = webcam.read()
+    grey = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    faces = face_cascade.detectMultiScale(grey, scaleFactor=1.1, minNeighbors=5, minSize=(30,30))
+    for (x,y, w, h) in faces:
+        cv2.rectangle(frame, (x,y), (x+w, y+h), (255,255,255), 2)
+        select_shirt_color(x,y, w, h)
+        cv2.imshow('Face', frame)
+
+    #exit with q
+    if cv2.waitKey(1) & 0xFF == ord('q'): 
+        webcam.release() 
+        cv2.destroyAllWindows() 
+        break
+
+
+
+
+
+
+#Youtube API stuff
+import time
+
+#Associate the picture of the 2hu char with the name(string) that matches the name in the dictionary
+#I make a new dictionary, key = img, value = 2hu character name
+# assign that to a variable then use that variable to get the url from the dictionary
+#then use that url to play the video
+TouhouCharacter_Song_List = {
+    "Aya Shameimaru": "https://www.youtube.com/watch?v=NmlXXPVxQ3Q",
+    "Yuyuko Saigyouji": "https://www.youtube.com/watch?v=Zis2TtxdFjQ&list=RDZis2TtxdFjQ&start_radio=1",
+    "Rinnosuke": "https://www.youtube.com/watch?v=LjGoKGjGTBg&list=RDLjGoKGjGTBg&start_radio=1",
+    "Inaba Tewi": "https://www.youtube.com/watch?v=JDs77a_tUnE",
+    "Eiki Yamaxanadu": "https://www.youtube.com/watch?v=0kMyTYcmvJw&list=RD0kMyTYcmvJw&start_radio=1",
+    "Utsuho Reiuji": "https://www.youtube.com/watch?v=Xy_-7OXophY&list=RDXy_-7OXophY&start_radio=1",
+    "Cirno": "https://www.youtube.com/watch?v=WnVltopWrfY&list=RDWnVltopWrfY&start_radio=1",
+    "Hakurei Reimu": "https://www.youtube.com/watch?v=fMdGSTE4-Zk",
+    "Suika Ibuki": "https://www.youtube.com/watch?v=2gP3J--2-HA&list=RD2gP3J--2-HA&start_radio=1",  
+    "Remillia Scarlet": "https://www.youtube.com/watch?v=aJQ5HsXlPTo",  
+    "Seiga Kishin": "https://www.youtube.com/watch?v=Wzneo-hJy-4&list=RDWzneo-hJy-4&start_radio=1",
+    "Satori Komeiji": "https://www.youtube.com/watch?v=WjpVUq7S0qY&list=RDWjpVUq7S0qY&start_radio=1",   
+    "Kaguya Horaisan": "https://www.youtube.com/watch?v=pw2WQjqKpVM&list=RDpw2WQjqKpVM&start_radio=1",
+    "Reisen Udongein Inaba": "https://www.youtube.com/watch?v=TbYikXsMCH4&list=RDTbYikXsMCH4&start_radio=1",
+    "Kogasa": "https://www.youtube.com/watch?v=F44OrMNBjl4&list=RDF44OrMNBjl4&start_radio=1",
+    "Nitori Kameshiro": "https://www.youtube.com/watch?v=1KkcwBE7vx0&list=RD1KkcwBE7vx0&start_radio=1",
+    "Hinanawi Tenshi": "https://www.youtube.com/watch?v=JVuHxCCtL9I&list=RDJVuHxCCtL9I&start_radio=1",
+    "Reisen Inaba": "https://www.youtube.com/watch?v=TbYikXsMCH4&list=RDTbYikXsMCH4&start_radio=1",
+    "Yuuma": "https://www.youtube.com/watch?v=YENQ4c-Hg7o&list=RDYENQ4c-Hg7o&start_radio=1",
+    "Marisa Kirisame": "https://www.youtube.com/watch?v=7RBJ4NMOBV0",
+    "Wriggle Nightbug": "https://www.youtube.com/watch?v=3kAOz5huQg0&list=RD3kAOz5huQg0&start_radio=1",
+    "Sanae Kochiya": "https://www.youtube.com/watch?v=OaqeawuY0r0",
+    "Youmu": "https://www.youtube.com/watch?v=OaqeawuY0r0",
+    "Kyoko Kasodani": "https://www.youtube.com/watch?v=moaXUZIBLNg&list=RDmoaXUZIBLNg&start_radio=1",
+    "Mamizhou": "https://www.youtube.com/watch?v=F-mrUZIMTbU&list=RDF-mrUZIMTbU&start_radio=1",
+    "Sekibanki": "https://www.youtube.com/watch?v=gfActE8c-i0&list=RDgfActE8c-i0&start_radio=1",
+    "Mystia Lorelei": "https://www.youtube.com/watch?v=hXmQDpTY6io&list=RDhXmQDpTY6io&start_radio=1",
+    "Patchouli": "https://www.youtube.com/watch?v=ygyraTutBJg&list=RDygyraTutBJg&start_radio=1",
+    "Yuugi": "https://www.youtube.com/watch?v=4gEVj0Y1iCk&list=RD4gEVj0Y1iCk&start_radio=1",
+    "Momiji": "https://www.youtube.com/watch?v=GWNDB1juaeo&list=RDGWNDB1juaeo&start_radio=1", 
+    "Okina": "https://www.youtube.com/watch?v=J_6Dc5_RDmA&list=RDJ_6Dc5_RDmA&start_radio=1",
+    "Yukari": "https://www.youtube.com/watch?v=195XntreoMc&list=RD195XntreoMc&start_radio=1",
+    "Rin Kaenbyou": "https://www.youtube.com/watch?v=ZZoJLMuq_cQ",
+    "Teto": "https://www.youtube.com/watch?v=0iVlSNpq8i8",
+    "Haku": "https://youtu.be/8f0ljVok71U?t=34",
+    "Miku": "https://youtu.be/NocXEwsJGOQ?list=RDNocXEwsJGOQ&t=46",
+    "Neru": "https://www.youtube.com/watch?v=o4Gh11wjpKw&list=RDo4Gh11wjpKw",
+}
+
+Character = ""  # Put ze character heire 
+
+testimg = cv2.imread("C:\\Users\\okayh\\Documents\\touhous\\latest-116244708.png")
+
+def play_youtube_video(url):
+    
+    
+    os.system(f'start {url}')  # Pause to allow the video to play for a while
+    time.sleep(10)  # Let the video play for 10 seconds
+    #os.system("taskkill /im firefox.exe /f")  # Browser kill 
+     #IMPORTANT, SET UR BROWSER TO Control if audio and video play automatically on sites = true
+
+play_youtube_video(TouhouCharacter_Song_List[Character])#put the url from the dictionary as a parametre
+#it took us 2 hr for this :sob:
+
+
+   
+
+
+
+
+
+
+
+
+
+
