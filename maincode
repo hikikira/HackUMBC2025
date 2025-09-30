@@ -8,7 +8,7 @@ import time
 
 #variables
 touhoufile = "Touhou_color.txt"
-dir = "C:\\Users\\okayh\\Documents\\touhous"
+dir = "C:\\Users\\okayh\\Documents\\touhous" #replace with file path of your touhous
 songplay = False
 colortup = ""        
 selected_2hu = ""
