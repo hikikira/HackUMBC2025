@@ -91,9 +91,11 @@ def show_right_2hu(r1,g1,b1, r2, g2, b2):
             with open(touhoufile) as f:
                 lines = f.readlines()
                 #matched_Index = None
+                2hu_song = ""
                 for index in range(len(array)):
                     if str((r2, g2, b2)) in array[index]:
                         selected_2hu = str(array[index]-1) #does the -1 break the thing bc it an array?
+                        2hu_song = selected_2hu
                         #matched_Index = index  
                         #break
                 for i in os.listdir(dir):
@@ -116,7 +118,7 @@ def show_right_2hu(r1,g1,b1, r2, g2, b2):
                  if selected_2hu == "":
                      pass 
                 else:
-                 play_youtube_video(TouhouCharacter_Song_List.get(selected_2hu))
+                 play_youtube_video(TouhouCharacter_Song_List.get(2hu_song))
                  
 
 array = []
